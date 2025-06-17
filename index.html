@@ -179,26 +179,26 @@
 
         // ===== 2. Brush Interactivo =====
         function makeBrush() {
-            // Datos de ejemplo (reemplazar con dense.csv si está disponible)
-            const data = Array.from({length: 50}, () => ({
-                A: Math.random() * 300,
-                B: Math.random() * 300
-            }));
+    // Usa TU URL de GitHub (o ruta local)
+    d3.csv("https://github.com/damapech1/primerinformed3/blob/6b1c41077e86153f06e665565c39ad99ebb5c41e/dense.csv").then(function(data) {
+        var svg1 = d3.select("#brush1"), svg2 = d3.select("#brush2");
 
-            var svg1 = d3.select("#brush1"), svg2 = d3.select("#brush2");
+        var sc1 = d3.scaleLinear()
+            .domain([0, 10, 50])
+            .range(["lime", "yellow", "red"]);
+        var sc2 = d3.scaleLinear()
+            .domain([0, 10, 50])
+            .range(["lime", "yellow", "blue"]);
 
-            var sc1 = d3.scaleLinear()
-                .domain([0, 10, 50])
-                .range(["lime", "yellow", "red"]);
-            var sc2 = d3.scaleLinear()
-                .domain([0, 10, 50])
-                .range(["lime", "yellow", "blue"]);
+        var cs1 = drawCircles(svg1, data, d => d["A"], d => d["B"], sc1);
+        var cs2 = drawCircles(svg2, data, d => d["A"], d => d["B"], sc2);
 
-            var cs1 = drawCircles(svg1, data, d => d.A, d => d.B, sc1);
-            var cs2 = drawCircles(svg2, data, d => d.A, d => d.B, sc2);
-
-            svg1.call(installHandlers, data, cs1, cs2, sc1, sc2);
-        }
+        svg1.call(installHandlers, data, cs1, cs2, sc1, sc2);
+    }).catch(function(error) {
+        console.error("Error cargando el CSV:", error);
+        // Opcional: cargar datos de respaldo
+    });
+}
 
         function drawCircles(svg, data, accX, accY, sc) {
             var color = sc(Infinity);
