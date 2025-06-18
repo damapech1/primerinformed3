@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard D3.js Interactivo</title>
-    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <title>Dashboard D3.js - Visualizaciones Interactivas</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -13,283 +13,373 @@
         }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background: pink;
             min-height: 100vh;
-            padding: 20px;
-            color: #2c3e50;
+            padding: 0;
         }
-        .dashboard {
+        .container {
             max-width: 1400px;
-            margin: 0 auto;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            margin: 40px auto;
+            padding: 20px;
         }
-        .header {
+        .main-title {
             text-align: center;
-            margin-bottom: 40px;
-        }
-        .header h1 {
-            font-size: 2.5em;
-            font-weight: 300;
-            margin-bottom: 10px;
-            background: linear-gradient(45deg, #667eea, #764ba2);
+            font-size: 2.7em;
+            font-weight: 900;
+            letter-spacing: 2px;
+            margin-top: 32px;
+            margin-bottom: 20px;
+            background: linear-gradient(90deg, #ff6f91 0%, #38ada9 50%, #6a89cc 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 8px rgba(80,80,80,0.10);
         }
-        .section {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        .subtitle {
+            text-align: center;
+            color: #6b7280;
+            font-size: 1.1em;
+            margin-bottom: 40px;
+            font-weight: 400;
         }
-        .section-title {
-            font-size: 1.3em;
-            font-weight: 600;
-            margin-bottom: 20px;
-            color: #2c3e50;
+        .visualization-section {
+            margin-bottom: 48px;
+            padding: 32px 24px;
+            border-radius: 18px;
+            background: linear-gradient(120deg, #d0f0fd 0%, #e0ffe9 100%);
+            box-shadow: 0 8px 32px rgba(80, 80, 80, 0.08);
             display: flex;
+            flex-direction: column;
             align-items: center;
+            transition: all 0.3s ease;
         }
-        .section-title svg {
-            margin-right: 10px;
+        .visualization-section:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(80, 80, 80, 0.12);
         }
-        .grid-2 {
+        .visualization-section:nth-child(3) {
+            background: linear-gradient(120deg, #cfe3fd 0%, #e6f2ff 100%); /* Azul claro */
+        }
+        .visualization-section:nth-child(4) {
+            background: linear-gradient(120deg, #f3e5f5 0%, #fce4ec 100%); /* Rosado/morado claro */
+        }
+        .visualization-section:nth-child(5) {
+            background: linear-gradient(120deg, #fff9c4 0%, #f0f4c3 100%); /* Amarillo claro */
+        }
+        .visualization-section:nth-child(6) {
+            background: linear-gradient(120deg, #20211d 0%, #e0f7fa 100%); /* Verde claro */
+        }
+        .visualization-section:nth-child(7) {
+            background: linear-gradient(120deg, #e1bee7 0%, #f8bbd0 100%); /* Rosa/morado suave */
+        }
+
+        .charts-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+            margin-bottom: 30px;
+            width: 100%;
         }
-        .grid-3 {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 20px;
+        .full-width {
+            grid-column: 1 / -1;
         }
-        svg {
-            background: #f8f9fa;
-            border-radius: 10px;
-            display: block;
-            margin: 0 auto;
+        .brush-container {
+            display: flex; 
+            gap: 20px; 
+            justify-content: center;
+            flex-wrap: wrap;
         }
-        @media (max-width: 768px) {
-            .grid-2, .grid-3 {
+        .brush-item {
+            text-align: center;
+        }
+        .brush-label {
+            color: #718096; 
+            font-size: 0.9em; 
+            margin-top: 10px;
+        }
+        .instruction {
+            background: rgba(255, 255, 255, 0.7);
+            color: #4a5568;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            margin-top: 15px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(5px);
+        }
+        .loading {
+            color: #48bb78;
+            font-style: italic;
+            padding: 10px;
+            text-align: center;
+        }
+        .error {
+            color: #f56565;
+            font-style: italic;
+            padding: 10px;
+            text-align: center;
+        }
+        @media (max-width: 900px) {
+            .container { 
+                padding: 8px; 
+                margin: 20px auto;
+            }
+            .visualization-section { 
+                padding: 20px 16px; 
+                margin-bottom: 30px;
+            }
+            .main-title {
+                font-size: 2.2em;
+                margin-top: 20px;
+                margin-bottom: 30px;
+            }
+            .charts-grid {
                 grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            .brush-container {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+        @media (max-width: 600px) {
+            .main-title {
+                font-size: 1.8em;
+            }
+            .visualization-section svg {
+                max-width: 100%;
+                height: auto;
             }
         }
     </style>
 </head>
 <body>
-    <div class="dashboard">
-        <div class="header">
-            <h1>🛠 Dashboard.js</h1>
-            <p>D3js Examples by Damaris Pech</p>
-        </div>
+    <div class="container">
+        <h1 class="main-title">D3.js Dashboard</h1>
+        <p class="subtitle">Damaris Pech</p>
 
-        <!-- Sección 1: Coordenadas de Píxeles -->
-        <div class="section">
-            <div class="section-title">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="12" y1="8" x2="12" y2="16"></line>
-                    <line x1="8" y1="12" x2="16" y2="12"></line>
-                </svg>
-                Coordenadas de Píxeles
-            </div>
-            <div class="grid-2">
+        <div class="charts-grid">
+            <!-- 1. Coordenadas del Mouse -->
+            <div class="visualization-section">
+                <h2>🎯 Mouse Coordinates</h2>
                 <svg id="coords" width="300" height="300"></svg>
-                <div>
-                    <p>Mueve el mouse sobre el área gris para ver las coordenadas en tiempo real.</p>
-                    <p><strong>Uso:</strong> Útil para debugging de posiciones en visualizaciones.</p>
+                <div class="instruction">Move the mouse over the area</div>
+            </div>
+
+            <!-- 2. Brush con CSV -->
+            <div class="visualization-section">
+                <h2>🌈 Distance Gradient Circles</h2>
+                <div id="csv-status" class="loading">Loading data from GitHub...</div>
+                <div id="csv-visualization" style="display: none; width: 100%;">
+                    <div class="brush-container">
+                        <div class="brush-item">
+                            <svg id="brush1" width="300" height="300"></svg>
+                        </div>
+                        <div class="brush-item">
+                            <svg id="brush2" width="300" height="300"></svg>
+                        </div>
+                    </div>
+                    <div class="instruction">Move mouse over left panel</div>
                 </div>
             </div>
-        </div>
 
-        <!-- Sección 2: Brush Interactivo -->
-        <div class="section">
-            <div class="section-title">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            <!-- 3. Drag and Drop -->
+            <div class="visualization-section">
+                <h2>🎪 Draggable Circles</h2>
+                <svg id="dragdrop" width="600" height="200">
+                    <circle cx="100" cy="100" r="20" fill="#add8e6"></circle> <!-- Azul claro -->
+                    <circle cx="300" cy="100" r="20" fill="#d1c4e9"></circle> <!-- Morado claro -->
+                    <circle cx="500" cy="100" r="20" fill="#f8bbd0"></circle> <!-- Rosado claro -->
                 </svg>
-                Brush Interactivo
+                <div class="instruction">Drag any circle</div>
             </div>
-            <div class="grid-3">
-                <svg id="brush1" width="300" height="300"></svg>
-                <svg id="brush2" width="300" height="300"></svg>
-                <div>
-                    <p>Mueve el mouse sobre el primer gráfico para ver el efecto "brush" en ambos.</p>
-                    <p><strong>Técnica:</strong> Vinculación de datos entre múltiples vistas.</p>
-                </div>
-            </div>
-        </div>
 
-        <!-- Sección 3: Drag and Drop -->
-        <div class="section">
-            <div class="section-title">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="4 17 10 11 4 5"></polyline>
-                    <line x1="12" y1="19" x2="20" y2="19"></line>
-                </svg>
-                Drag and Drop
-            </div>
-            <svg id="dragdrop" width="600" height="200"></svg>
-            <p style="text-align: center; margin-top: 15px;">Arrastra los círculos para interactuar (cambian a color verde durante el drag).</p>
-        </div>
 
-        <!-- Sección 4: Efecto Stagger -->
-        <div class="section">
-            <div class="section-title">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="3" y1="12" x2="21" y2="12"></line>
-                    <line x1="3" y1="6" x2="21" y2="6"></line>
-                    <line x1="3" y1="18" x2="21" y2="18"></line>
-                </svg>
-                Efecto Stagger
+            <!-- 4. Staggered Bars - Full width -->
+            <div class="visualization-section full-width">
+                <h2>📊 Animated Bars</h2>
+                <svg id="stagger" width="800" height="400"></svg>
+                <div class="instruction">Click to toggle data</div>
             </div>
-            <svg id="stagger" width="600" height="300"></svg>
-            <p style="text-align: center; margin-top: 15px;">Haz clic para alternar entre los dos conjuntos de datos con animación escalonada.</p>
-        </div>
 
-        <!-- Sección 5: Curva de Lissajous -->
-        <div class="section">
-            <div class="section-title">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M3.5 13a10 10 0 0 1 17 0"></path>
-                    <path d="M3.5 7a10 10 0 0 0 17 0"></path>
-                </svg>
-                Curva de Lissajous
+            <!-- 5. Lissajous Curve -->
+            <div class="visualization-section">
+                <h2>🌀 Lissajous Curve</h2>
+                <svg id="lissajous" width="300" height="300"></svg>
+                <div class="instruction">Automatic animation</div>
             </div>
-            <svg id="lissajous" width="300" height="300"></svg>
-            <p style="text-align: center; margin-top: 15px;">Animación matemática que dibuja una curva de Lissajous en tiempo real.</p>
         </div>
     </div>
 
     <script>
-        // ===== 1. Coordenadas de Píxeles =====
-        function coordsPixels() {
-            var txt = d3.select("#coords").append('text');
-            var svg = d3.select("#coords").attr('cursor', 'crosshair')
-                .on('mousemove', function() {
-                    var pt = d3.mouse(svg.node());
-                    txt.attr('x', 18+pt[0])
-                        .attr('y', 6+pt[1])
-                        .text('' + pt[0] + ',' + pt[1]);
+        // 1. Coordenadas del Mouse
+        function setupMouseCoords() {
+            const svg = d3.select('#coords');
+            const txt = svg.append('text')
+                .attr('font-family', 'Arial')
+                .attr('font-size', '14px')
+                .attr('fill', '#2c3e50');
+                
+            svg.on('mousemove', function(event) {
+                const [x, y] = d3.pointer(event);
+                txt.attr('x', 18 + x)
+                   .attr('y', 6 + y)
+                   .text(`(${Math.round(x)}, ${Math.round(y)})`);
+            }).on('mouseleave', () => txt.text(''));
+        }
+
+        // 2. Cargar CSV y configurar círculos
+        async function loadCSVAndSetupCircles() {
+            const CSV_URL = "https://raw.githubusercontent.com/damapech1/primerinformed3/82acdd855e2c5c2790354fbf9b0b5c2396a1752d/dense.csv";
+            
+            try {
+                const data = await d3.csv(CSV_URL, d => ({
+                    A: +d.A,
+                    B: +d.B,
+                    r: Infinity
+                }));
+                
+                document.getElementById('csv-status').style.display = 'none';
+                document.getElementById('csv-visualization').style.display = 'block';
+                
+                setupGradientCircles(data);
+            } catch (error) {
+                console.error('Error loading CSV:', error);
+                document.getElementById('csv-status').className = 'error';
+                document.getElementById('csv-status').textContent = 'Error loading CSV. Using sample data...';
+                
+                // Datos de ejemplo
+                const sampleData = [
+                    {A: 50, B: 120, r: Infinity},
+                    {A: 80, B: 150, r: Infinity},
+                    {A: 120, B: 80, r: Infinity},
+                    {A: 150, B: 200, r: Infinity},
+                    {A: 200, B: 100, r: Infinity}
+                ];
+                
+                setTimeout(() => {
+                    document.getElementById('csv-status').style.display = 'none';
+                    document.getElementById('csv-visualization').style.display = 'block';
+                    setupGradientCircles(sampleData);
+                }, 1500);
+            }
+        }
+
+        function setupGradientCircles(data) {
+            const svg1 = d3.select("#brush1");
+            const svg2 = d3.select("#brush2");
+
+            const sc1 = d3.scaleLinear().domain([0, 50, 150]).range(["lime", "yellow", "red"]);
+            const sc2 = d3.scaleLinear().domain([0, 50, 150]).range(["lime", "yellow", "blue"]);
+
+            function drawCircles(svg, data, sc) {
+                return svg.selectAll("circle")
+                    .data(data)
+                    .enter()
+                    .append("circle")
+                    .attr("r", 8)
+                    .attr("cx", d => d.cx = d.A)
+                    .attr("cy", d => d.cy = d.B)
+                    .attr("fill", sc(Infinity))
+                    .attr("fill-opacity", 0.7)
+                    .attr("stroke", "white")
+                    .attr("stroke-width", 2);
+            }
+
+            const cs1 = drawCircles(svg1, data, sc1);
+            const cs2 = drawCircles(svg2, data, sc2);
+
+            svg1.on("mousemove", function(event) {
+                const [x, y] = d3.pointer(event);
+                cs1.attr("fill", function(d, i) {
+                    const r = Math.hypot(x - d.cx, y - d.cy);
+                    data[i].r = r;
+                    return sc1(r);
                 });
+                cs2.attr("fill", (d, i) => sc2(data[i].r));
+            }).on("mouseleave", function() {
+                cs1.attr("fill", sc1(Infinity));
+                cs2.attr("fill", sc2(Infinity));
+            });
         }
 
-        // ===== 2. Brush Interactivo =====
-        function makeBrush() {
-    // Usa TU URL de GitHub (o ruta local)
-    d3.csv("https://github.com/damapech1/primerinformed3/blob/6b1c41077e86153f06e665565c39ad99ebb5c41e/dense.csv").then(function(data) {
-        var svg1 = d3.select("#brush1"), svg2 = d3.select("#brush2");
+        // 3. Drag and Drop
+        function setupDragDrop() {
+            let widget, originalColor;
 
-        var sc1 = d3.scaleLinear()
-            .domain([0, 10, 50])
-            .range(["lime", "yellow", "red"]);
-        var sc2 = d3.scaleLinear()
-            .domain([0, 10, 50])
-            .range(["lime", "yellow", "blue"]);
-
-        var cs1 = drawCircles(svg1, data, d => d["A"], d => d["B"], sc1);
-        var cs2 = drawCircles(svg2, data, d => d["A"], d => d["B"], sc2);
-
-        svg1.call(installHandlers, data, cs1, cs2, sc1, sc2);
-    }).catch(function(error) {
-        console.error("Error cargando el CSV:", error);
-        // Opcional: cargar datos de respaldo
-    });
-}
-
-        function drawCircles(svg, data, accX, accY, sc) {
-            var color = sc(Infinity);
-            return svg.selectAll("circle")
-                .data(data)
-                .enter()
-                .append("circle")
-                .attr("r", 5)
-                .attr("cx", accX)
-                .attr("cy", accY)
-                .attr("fill", color)
-                .attr("fill-opacity", 0.4);
-        }
-
-        function installHandlers(svg, data, cs1, cs2, sc1, sc2) {
-            svg.attr("cursor", "crosshair")
-                .on("mousemove", function() {
-                    var pt = d3.mouse(svg.node());
-                    cs1.attr("fill", function(d, i) {
-                        var r = Math.hypot(pt[0] - d3.select(this).attr("cx"),
-                                        pt[1] - d3.select(this).attr("cy"));
-                        data[i].r = r;
-                        return sc1(r);
-                    });
-                    cs2.attr("fill", (d, i) => sc2(data[i].r));
+            const drag = d3.drag()
+                .on("start", function(event) {
+                    widget = d3.select(this);
+                    originalColor = widget.attr("fill");
+                    widget.attr("fill", "#4facfe")
+                          .attr("r", 25);
                 })
-                .on("mouseleave", function() {
-                    cs1.attr("fill", sc1(Infinity));
-                    cs2.attr("fill", sc2(Infinity));
-                });
-        }
-
-        // ===== 3. Drag and Drop =====
-        function makeDragDrop() {
-            var widget = undefined, color = undefined;
-
-            var drag = d3.drag()
-                .on("start", function() {
-                    color = d3.select(this).attr("fill");
-                    widget = d3.select(this).attr("fill", "lime");
-                })
-                .on("drag", function() {
-                    var pt = d3.mouse(d3.select(this).node());
-                    widget.attr("cx", pt[0]).attr("cy", pt[1]);
+                .on("drag", function(event) {
+                    widget.attr("cx", event.x)
+                          .attr("cy", event.y);
                 })
                 .on("end", function() {
-                    widget.attr("fill", color);
+                    widget.attr("fill", originalColor)
+                          .attr("r", 20);
                     widget = undefined;
                 });
 
-            drag(d3.select("#dragdrop").selectAll("circle"));
+            d3.select("#dragdrop").selectAll("circle").call(drag);
         }
 
-        // ===== 4. Efecto Stagger =====
+        // 4. Gráfico Stagger
         function makeStagger() {
-            var ds1 = [2, 1, 3, 5, 7, 8, 9, 9, 9, 8, 7, 5, 3, 1, 2];
-            var ds2 = [8, 9, 8, 7, 5, 3, 2, 1, 2, 3, 5, 7, 8, 9, 8];
-            var n = ds1.length, mx = d3.max(d3.merge([ds1, ds2]));
-            var svg = d3.select("#stagger");
+            let ds1 = [2, 1, 3, 5, 7, 8, 9, 9, 9, 8, 7, 5, 3, 1, 2];
+            let ds2 = [8, 9, 8, 7, 5, 3, 2, 1, 2, 3, 5, 7, 8, 9, 8];
 
-            var scX = d3.scaleLinear().domain([0,n]).range([50,540]);
-            var scY = d3.scaleLinear().domain([0,mx]).range([250,50]);
+            const n = ds1.length;
+            const mx = d3.max([...ds1, ...ds2]);
 
-            svg.selectAll("line").data(ds1).enter().append("line")
-                .attr("stroke", "red").attr("stroke-width", 20)
-                .attr("x1", (d,i) => scX(i)).attr("y1", scY(0))
-                .attr("x2", (d,i) => scX(i)).attr("y2", d => scY(d));
+            const svg = d3.select("#stagger");
 
-            svg.on("click", function() {
+            const scX = d3.scaleLinear().domain([0, n]).range([50, 750]);
+            const scY = d3.scaleLinear().domain([0, mx]).range([350, 50]);
+
+            svg.selectAll("line")
+                .data(ds1)
+                .enter()
+                .append("line")
+                .attr("stroke", "red")
+                .attr("stroke-width", 20)
+                .attr("x1", (d, i) => scX(i))
+                .attr("y1", scY(0))
+                .attr("x2", (d, i) => scX(i))
+                .attr("y2", d => scY(d));
+
+            svg.on("click", function () {
                 [ds1, ds2] = [ds2, ds1];
-                svg.selectAll("line").data(ds1)
-                    .transition().duration(1000).delay((d,i) => 200*i)
+                svg.selectAll("line")
+                    .data(ds1)
+                    .transition()
+                    .duration(1000)
+                    .delay((d, i) => 200 * i)
                     .attr("y2", d => scY(d));
             });
         }
 
-        // ===== 5. Curva de Lissajous =====
-        function makeLissajous() {
+        // 5. Lissajous
+        (function makeLissajous() {
             var svg = d3.select("#lissajous");
+
             var a = 1.9, b = 3.2;
-            var phi, omega = 2*Math.PI/10000;
-            var crrX = 150+100, crrY = 150+0;
-            var prvX = crrX, prvY = crrY;
+            var omega = 2 * Math.PI / 10000;
+
+            var prvX = 150 + 100, prvY = 150;
 
             var timer = d3.timer(function(t) {
-                phi = omega*t;
-                crrX = 150+100*Math.cos(a*phi);
-                crrY = 150+100*Math.sin(b*phi);
+                var phi = omega * t;
+                var crrX = 150 + 100 * Math.cos(a * phi);
+                var crrY = 150 + 100 * Math.sin(b * phi);
 
                 svg.selectAll("line")
-                    .each(function() { this.bogus_opacity *= .99; })
+                    .each(function() { this.bogus_opacity *= 0.99; })
                     .attr("stroke-opacity", function() { return this.bogus_opacity; })
                     .filter(function() { return this.bogus_opacity < 0.05; })
                     .remove();
@@ -303,17 +393,16 @@
                 prvX = crrX;
                 prvY = crrY;
 
-                if(t > 120e3) { timer.stop(); }
+                if (t > 120000) { timer.stop(); }
             });
-        }
+        })();
 
-        // Inicializar todos los componentes
-        document.addEventListener("DOMContentLoaded", function() {
-            coordsPixels();
-            makeBrush();
-            makeDragDrop();
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', function() {
+            setupMouseCoords();
+            loadCSVAndSetupCircles();
+            setupDragDrop();
             makeStagger();
-            makeLissajous();
         });
     </script>
 </body>
